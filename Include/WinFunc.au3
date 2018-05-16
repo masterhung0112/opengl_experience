@@ -8,3 +8,7 @@ Func GetDC( $hWnd )
    EndIf
    Return $aRet[0]
 EndFunc
+
+Func SwapBuffers( $hDC )
+	DllCall( $dllGDI32, "int", "SwapBuffers", "hwnd", $hDC )
+EndFunc
