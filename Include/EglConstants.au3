@@ -1,0 +1,59 @@
+#include-once
+
+; EGL and native handle values
+Global Const $EGL_DEFAULT_DISPLAY = 0
+Global Const $EGL_NO_CONTEXT = 0
+Global Const $EGL_NO_DISPLAY = 0
+Global Const $EGL_NO_SURFACE = 0
+
+; Boolean
+Global Const $EGL_FALSE = 0
+Global Const $EGL_TRUE = 1
+
+; Errors
+Global Const $EGL_SUCCESS = 0x3000
+Global Const $EGL_NOT_INITIALIZED = 0x3001
+Global Const $EGL_BAD_ACCESS = 0x3002
+Global Const $EGL_BAD_ALLOC = 0x3003
+Global Const $EGL_BAD_ATTRIBUTE = 0x3004
+Global Const $EGL_BAD_CONFIG = 0x3005
+Global Const $EGL_BAD_CONTEXT = 0x3006
+Global Const $EGL_BAD_CURRENT_SURFACE = 0x3007
+Global Const $EGL_BAD_DISPLAY = 0x3008
+Global Const $EGL_BAD_MATCH = 0x3009
+Global Const $EGL_BAD_NATIVE_PIXMAP = 0x300A
+Global Const $EGL_BAD_NATIVE_WINDOW = 0x300B
+Global Const $EGL_BAD_PARAMETER = 0x300C
+Global Const $EGL_BAD_SURFACE = 0x300D
+Global Const $EGL_CONTEXT_LOST = 0x300E
+
+; Config attributes
+Global Const $EGL_BUFFER_SIZE = 0x3020
+Global Const $EGL_ALPHA_SIZE = 0x3021
+Global Const $EGL_BLUE_SIZE = 0x3022
+Global Const $EGL_GREEN_SIZE = 0x3023
+Global Const $EGL_RED_SIZE = 0x3024
+Global Const $EGL_DEPTH_SIZE = 0x3025
+Global Const $EGL_STENCIL_SIZE = 0x3026
+Global Const $EGL_CONFIG_CAVEAT = 0x3027
+Global Const $EGL_CONFIG_ID = 0x3028
+Global Const $EGL_LEVEL = 0x3029
+Global Const $EGL_MAX_PBUFFER_HEIGHT = 0x302A
+Global Const $EGL_MAX_PBUFFER_PIXELS = 0x302B
+Global Const $EGL_MAX_PBUFFER_WIDTH = 0x302C
+Global Const $EGL_NATIVE_RENDERABLE = 0x302D
+Global Const $EGL_NATIVE_VISUAL_ID = 0x302E
+Global Const $EGL_NATIVE_VISUAL_TYPE = 0x302F
+;/*#define EGL_PRESERVED_RESOURCES	 0x3030*/
+Global Const $EGL_SAMPLES = 0x3031
+Global Const $EGL_SAMPLE_BUFFERS = 0x3032
+Global Const $EGL_SURFACE_TYPE = 0x3033
+Global Const $EGL_TRANSPARENT_TYPE = 0x3034
+Global Const $EGL_TRANSPARENT_BLUE_VALUE = 0x3035
+Global Const $EGL_TRANSPARENT_GREEN_VALUE = 0x3036
+Global Const $EGL_TRANSPARENT_RED_VALUE = 0x3037
+Global Const $EGL_NONE = 0x3038
+Global Const $EGL_BIND_TO_TEXTURE_RGB = 0x3039
+Global Const $EGL_BIND_TO_TEXTURE_RGBA = 0x303A
+Global Const $EGL_MIN_SWAP_INTERVAL = 0x303B
+Global Const $EGL_MAX_SWAP_INTERVAL = 0x303C
