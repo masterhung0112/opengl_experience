@@ -43,42 +43,73 @@ EndFunc
 
 Func eglGetConfigs($dpy, ByRef $configs, $config_size, ByRef $num_config)
    Local $num_configInt = DllStructCreate("int")
-   Local $aRet = DllCall( $dllEgl, "bool", "eglGetConfigs", "handle", $dpy, "ptr", $configs, "int", $config_size, "ptr", DllStructGetPtr($num_configInt))
+   Local $localConfigs = DllStructCreate( "void*[" & $config_size & "]" )
+   Local $aRet = DllCall( $dllEgl, "bool", "eglGetConfigs", "handle", $dpy, "ptr", DllStructGetPtr($localConfigs), "int", $config_size, "ptr", DllStructGetPtr($num_configInt))
    If @error Then
 	  ErrorNotify("eglGetConfigs " & String(@error))
 	  Return SetError(@error, 0, $EGL_FALSE)
    EndIf
    $num_config = DllStructGetData($num_configInt, 1)
+   $configs = DllStructGetData($localConfigs, 1)
    Return $aRet[0]
 EndFunc
 
-Func eglChooseConfig($dpy, $eglChooseConfig, ByRef $configs, $config_size, ByRef $num_config)
+Func eglChooseConfig($dpy, $attribute_list, ByRef $configs, $config_size, ByRef $num_config)
    Local $num_configInt = DllStructCreate("int")
-   Local $localConfigs = DllStructCreate( "void*[" & $config_size & "]" )
-   Local $aRet = DllCall( $dllEgl, "bool", "eglChooseConfig", "handle", $dpy, "ptr", $eglChooseConfig, "ptr", DllStructGetPtr($localConfigs), "int", $config_size, "ptr", DllStructGetPtr($num_configInt))
+   Local $localConfigsStr = ""
+   For $i = 0 To $config_size - 1 Step 1
+	  $localConfigsStr &= "ptr;"
+   Next
+   Local $localConfigs = DllStructCreate( $localConfigsStr )
+   Local $localAttributeList = DllStructCreate("int[" & UBound($attribute_list) & "]" )
+   For $i = 0 To UBound($attribute_list) - 1 Step 1
+	  DllStructSetData($localAttributeList, 1, $attribute_list[$i], $i + 1)
+   Next
+
+;~    For $i = 0 To $config_size - 1 Step 1
+;~ 	  DllStructSetData($localConfigs, $i + 1, 0xF5)
+;~ 	  ErrorNotify("H" & DllStructGetData($localConfigs, $i + 1))
+;~    Next
+   Local $aRet = DllCall( $dllEgl, "bool", "eglChooseConfig", "handle", $dpy, "ptr", DllStructGetPtr($localAttributeList), "ptr", DllStructGetPtr($localConfigs), "int", $config_size, "ptr", DllStructGetPtr($num_configInt))
    If @error Then
 	  ErrorNotify("eglChooseConfig " & String(@error))
 	  Return SetError(@error, 0, $EGL_FALSE)
    EndIf
    $num_config = DllStructGetData($num_configInt, 1)
-   $configs = DllStructGetData($localConfigs, $config_size)
+
+   Local $configArr[$num_config]
+   For $i = 0 To $num_config - 1 Step 1
+;~ 	  ErrorNotify(DllStructGetData($localConfigs, $i + 1))
+	  $configArr[$i] = DllStructGetData($localConfigs, $i + 1)
+   Next
+   $configs = $configArr
    Return $aRet[0]
 EndFunc
 
-Func eglCreateWindowSurface($dpy, $configs, $win, $attrib_list)
-   Local $aRet = DllCall( $dllEgl, "ptr", "eglCreateWindowSurface", "handle", $dpy, "ptr", $configs, "hwnd", $win, "ptr", $attrib_list)
+Func eglCreateWindowSurface($dpy, $configs, $win, $attribute_list)
+   Local $localAttributeList = DllStructCreate("int[" & UBound($attribute_list) & "]" )
+   For $i = 0 To UBound($attribute_list) - 1 Step 1
+	  DllStructSetData($localAttributeList, 1, $attribute_list[$i], $i + 1)
+   Next
+
+   Local $aRet = DllCall( $dllEgl, "ptr", "eglCreateWindowSurface", "handle", $dpy, "ptr", $configs, "hwnd", $win, "ptr", DllStructGetPtr($localAttributeList))
    If @error Then
 	  ErrorNotify("eglCreateWindowSurface " & String(@error))
-	  Return SetError(@error, 0, $EGL_FALSE)
+	  Return SetError(@error, 0, $EGL_NO_SURFACE)
    EndIf
    Return $aRet[0]
 EndFunc
 
-Func eglCreateContext($dpy, $configs, $share_context, $attrib_list)
-   Local $aRet = DllCall( $dllEgl, "ptr", "eglCreateContext", "handle", $dpy, "ptr", $configs, "ptr", $share_context, "ptr", $attrib_list)
+Func eglCreateContext($dpy, $configs, $share_context, $attribute_list)
+   Local $localAttributeList = DllStructCreate("int[" & UBound($attribute_list) & "]" )
+   For $i = 0 To UBound($attribute_list) - 1 Step 1
+	  DllStructSetData($localAttributeList, 1, $attribute_list[$i], $i + 1)
+   Next
+
+   Local $aRet = DllCall( $dllEgl, "ptr", "eglCreateContext", "handle", $dpy, "ptr", $configs, "ptr", $share_context, "ptr", DllStructGetPtr($localAttributeList))
    If @error Then
 	  ErrorNotify("eglCreateContext " & String(@error))
-	  Return SetError(@error, 0, $EGL_FALSE)
+	  Return SetError(@error, 0, $EGL_NO_CONTEXT)
    EndIf
    Return $aRet[0]
 EndFunc

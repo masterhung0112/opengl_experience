@@ -11,29 +11,34 @@ Global $iGuiHeight = 500
 Global $hGui, $bResize = True
 
 ; OpenGL window
-Global $hOpenGL = 0, $hDC, $hRC, $iProgram
+Global $hOpenGL = 0, $hDC, $hRC, $iProgram, $eglSurface
 
 Func MainFunc()
    $res = 1
 
    $res = InitGUIwindow()
    If Not $res Then
+	  ErrorNotify("InitGUIwindow Fail")
 	  GUI_EVENT_CLOSE()
 	  return $res
    EndIf
 
    $res = InitOpenGLwindow()
    If Not $res Then
+	  ErrorNotify("InitOpenGLwindow Fail")
 	  GUI_EVENT_CLOSE()
 	  return $res
    EndIf
 
-
-
 ;~    If Not CheckOpenGLversion( 3, 1 ) Then GUI_EVENT_CLOSE()
-   If Not CreateResources() Then GUI_EVENT_CLOSE()
+   $res = CreateResources()
+   If Not $res Then
+	  ErrorNotify("CreateResources Fail")
+	  GUI_EVENT_CLOSE()
+	  return $res
+   EndIf
 
-	   return $res
+   return $res
 EndFunc
 
 Func InitGUIwindow()
@@ -51,10 +56,8 @@ EndFunc
 
 Func InitOpenGLwindow()
    Local $attribute_list[] = [ _
-        $EGL_RED_SIZE, 1, _
-        $EGL_GREEN_SIZE, 1, _
-        $EGL_BLUE_SIZE, 1, _
-		$EGL_CONFORMANT, $EGL_OPENGL_ES2_BIT, _
+        $EGL_BUFFER_SIZE, 16, _
+		$EGL_RENDERABLE_TYPE, $EGL_OPENGL_ES2_BIT, _
         $EGL_NONE _
    ]
 ;
@@ -84,7 +87,7 @@ Func InitOpenGLwindow()
 	  return $EGL_FALSE
    EndIf
 
-;~    ErrorNotify($major & " " & $minor)
+   ;ErrorNotify($major & "." & $minor)
 
    $aRet = eglBindAPI($EGL_OPENGL_ES_API);
    If $aRet <> $EGL_TRUE Then
@@ -92,38 +95,44 @@ Func InitOpenGLwindow()
 	  return $EGL_FALSE
    EndIf
 
+   Local $config
    Local $numConfigs
    ; Obtain the display configs
    If eglGetConfigs($eglDisplay, Null, 0, $numConfigs) <> $EGL_TRUE Then
-	  return $EGL_FALSE
-   EndIf
-   $numConfigs = 0
-   ; Choose the display config OR get an appropriate EGL frame buffer configuration
-   Local $config
-   If eglChooseConfig($eglDisplay, $attribute_list, $config, 1, $numConfigs) <> $EGL_TRUE Then
+	  ErrorNotify("eglGetConfigs")
 	  return $EGL_FALSE
    EndIf
 
    ;ErrorNotify(String($numConfigs))
 
-   $surface = eglCreateWindowSurface($eglDisplay, $config, $hGui, Null)
-   If $surface = $EGL_NO_SURFACE Then
+   ;$numConfigs = 0
+   ; Choose the display config OR get an appropriate EGL frame buffer configuration
+   If eglChooseConfig($eglDisplay, $attribute_list, $config, 1, $numConfigs) <> $EGL_TRUE Then
+	  ErrorNotify("eglChooseConfig")
+	  return $EGL_FALSE
+   EndIf
+
+;~    ErrorNotify(String($numConfigs) & " " & $config[0])
+
+   Local $eglSurfaceAttributes[] = [ $EGL_NONE ]
+   $eglSurface = eglCreateWindowSurface($eglDisplay, $config[0], $hGui, $eglSurfaceAttributes)
+   If $eglSurface = $EGL_NO_SURFACE Then
 	  ErrorNotify("eglCreateWindowSurface Fail")
 	  return $EGL_FALSE
    EndIf
 
    ; create an EGL rendering context
    Local $contextAttribs[] = [ $EGL_CONTEXT_CLIENT_VERSION, 2, $EGL_NONE, $EGL_NONE ]
-   Local $context = eglCreateContext($eglDisplay, $config, $EGL_NO_CONTEXT, $contextAttribs)
+   Local $context = eglCreateContext($eglDisplay, $config[0], $EGL_NO_CONTEXT, $contextAttribs)
    If $context = $EGL_NO_CONTEXT Then
 	  ErrorNotify("eglCreateContext Fail")
 	  return $EGL_FALSE
    EndIf
 
    ; Make the context current
-   $aRet = eglMakeCurrent($eglDisplay, $surface, $surface, $context)
+   $aRet = eglMakeCurrent($eglDisplay, $eglSurface, $eglSurface, $context)
    If $aRet <> $EGL_TRUE Then
-	  ErrorNotify("eglMakeCurrent")
+	  ErrorNotify("eglMakeCurrent " & eglGetError())
 	  return $EGL_FALSE
    EndIf
 ;~    ; Create an EGL window surface
@@ -140,7 +149,7 @@ Func InitOpenGLwindow()
 ;~ 	  glClearColor( 1.0, 0.0, 0.0, 0.0 )
 ;~    glFlush();
 
-;~    eglSwapBuffers($eglDisplay, $surface)
+;~    eglSwapBuffers($eglDisplay, $eglSurface)
 
 ;~    GUISetState()
 
@@ -167,19 +176,17 @@ EndFunc
 Func InitializeProgram()
 
 	Local $sVertexShader = _
-		"#version 330" & @CRLF & _
-		"layout(location = 0) in vec4 position;" & @CRLF & _
+		"attribute vec4 vPosition;" & @CRLF & _
 		"void main()" & @CRLF & _
 		"{" & @CRLF & _
-		"    gl_Position = position;" & @CRLF & _
+		"    gl_Position = vPosition;" & @CRLF & _
 		"}" & @CRLF
 
 	Local $sFragmentShader = _
-		"#version 330" & @CRLF & _
-		"out vec4 outputColor;" & @CRLF & _
+		"precision mediump float;" & @CRLF & _
 		"void main()" & @CRLF & _
 		"{" & @CRLF & _
-		"    outputColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);" & @CRLF & _
+		"    gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);" & @CRLF & _
 		"}" & @CRLF
 
 	$iVertexShader = glCreateShader( $GL_VERTEX_SHADER )
