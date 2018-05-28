@@ -11,7 +11,7 @@ Global $iGuiHeight = 500
 Global $hGui, $bResize = True
 
 ; OpenGL window
-Global $hOpenGL = 0, $hDC, $hRC, $iProgram, $eglSurface
+Global $hOpenGL = 0, $hDC, $hRC, $iProgram, $eglSurface, $eglDisplay
 
 Func MainFunc()
    $res = 1
@@ -65,7 +65,7 @@ Func InitOpenGLwindow()
 ;~    Local $config
 ;~    Local $num_config
    Local $major, $minor, $aRet
-   Local $eglDisplay
+   
 ;~    $hOpenGL = GUICreate( "", $iGuiWidth, $iGuiHeight, 0, 0, $WS_CHILD, -1, $hGui )
 ;~    GUISetState()
 
@@ -188,21 +188,71 @@ Func InitializeProgram()
 		"{" & @CRLF & _
 		"    gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);" & @CRLF & _
 		"}" & @CRLF
-
-	$iVertexShader = glCreateShader( $GL_VERTEX_SHADER )
-	glShaderSource( $iVertexShader, 1, $sVertexShader, StringLen( $sVertexShader ) )
-	glCompileShader( $iVertexShader )
-
-	$iFragmentShader = glCreateShader( $GL_FRAGMENT_SHADER )
-	glShaderSource( $iFragmentShader, 1, $sFragmentShader, StringLen( $sFragmentShader ) )
-	glCompileShader( $iFragmentShader )
+	
+	$iVertexShader = LoadShader($sVertexShader, $GL_VERTEX_SHADER)
+	If $iVertexShader = 0 Then
+		ErrorNotify("glCreateShader vertex " & eglGetError())
+		return $EGL_FALSE
+	EndIf
+	
+	$iFragmentShader = LoadShader($sFragmentShader, $GL_FRAGMENT_SHADER)
+	If $iFragmentShader = 0 Then
+		ErrorNotify("glCreateShader fragment " & eglGetError())
+		return $EGL_FALSE
+	EndIf
 
 	$iProgram = glCreateProgram()
 	glAttachShader( $iProgram, $iVertexShader )
 	glAttachShader( $iProgram, $iFragmentShader )
+	
+	; Bind vPosition to attribute 0
+	glBindAttribLocation($iProgram, 0, "vPosition")
+	
 	glLinkProgram( $iProgram )
+	
+	Local $linked = 0
+	glGetProgramiv($iProgram, $GL_LINK_STATUS, $linked)
+	If $linked = 0 Then
+		Local $infoLen = 0
+		glGetProgramiv($iProgram, $GL_INFO_LOG_LENGTH, $infoLen)
+		If $infoLen > 0 Then
+			Local $infoLog = ""
+			glGetProgramInfoLog($iProgram, $infoLen, Null, $infoLog)
+			ErrorNotify("glGetProgramInfoLog " & $infoLog)
+		EndIf
+		
+		glDeleteProgram($iProgram)
+		return 0
+	EndIf
+	
 	glUseProgram(0)
 
+EndFunc
+
+; Create a shader object, load the shader source, and
+; compile the shader.
+Func LoadShader($shaderSrc, $type)
+	$ishader = glCreateShader( $type )
+	; Load the shader source
+	glShaderSource( $ishader, 1, $shaderSrc, StringLen( $shaderSrc ) )
+	; Compile the shader
+	glCompileShader( $ishader )
+	
+	Local $compiled = 0
+	glGetShaderiv($ishader, $GL_COMPILE_STATUS, $compiled)
+	If $compiled = 0 Then
+		Local $infoLen = 0
+		glGetShaderiv($ishader, $GL_INFO_LOG_LENGTH, $infoLen)
+		If $infoLen > 0 Then
+			Local $infoLog = ""
+			glGetShaderInfoLog($ishader, $infoLen, Null, $infoLog)
+			ErrorNotify("glGetShaderInfoLog " & $infoLog)
+		EndIf
+		
+		glDeleteShader($ishader)
+		return 0
+	EndIf
+	return $ishader
 EndFunc
 
 Func GUI_EVENT_CLOSE()

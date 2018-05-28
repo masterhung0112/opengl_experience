@@ -18,21 +18,20 @@ If MainFunc() = 1 Then
 
  ErrorNotify("MainFunc Error")
 
- Func DisplayFunction()
+Func DisplayFunction()
 
    glClear( $GL_COLOR_BUFFER_BIT + $GL_DEPTH_BUFFER_BIT )
-   glClearColor( 1.0, 0.0, 0.0, 0.0 )
+   glClearColor( 0.0, 0.0, 0.0, 0.0 )
    glUseProgram( $iProgram )
 
-;~ 	glBindBuffer( $GL_ARRAY_BUFFER, $iPositionBufferObject )
-;~ 	glEnableVertexAttribArray(0)
-;~ 	glVertexAttribPointer( 0, 4, $GL_FLOAT, $GL_FALSE, 0, 0 )
+   Local $vVertices[] = [0.0, 0.5, 0.0, -0.5, -0.5, 0.0, 0.5, -0.5, 0.0]
 
-;~ 	glDrawArrays( $GL_TRIANGLES, 0, 3 )
+   ; Load the vertex data
+   glVertexAttribPointer( 0, 3, $GL_FLOAT, $GL_FALSE, 0, $vVertices )
+   glEnableVertexAttribArray(0)
+   glDrawArrays( $GL_TRIANGLES, 0, 3 )
+   eglSwapBuffers($eglDisplay, $eglSurface)
+   ;SwapBuffers( $hDC )
 
-;~ 	glDisableVertexAttribArray(0)
    glUseProgram(0)
-
-   SwapBuffers( $hDC )
-
 EndFunc

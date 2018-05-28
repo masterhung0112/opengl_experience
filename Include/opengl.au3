@@ -110,3 +110,81 @@ Func glClear( $mask )
 	DllCall( $dllGLESv2, "none", "glClear", "uint", $mask )
 	If @error Then Return SetError( 3, 0, 0 )
 EndFunc
+
+Func checkError($funcName)
+	If @error Then
+	  ErrorNotify($funcName & String(@error))
+	  Return SetError(@error, 0, $EGL_FALSE)
+	EndIf
+	return $EGL_TRUE
+EndFunc
+
+Func glGetShaderiv($shader, $pname, byref $params)
+	Local $ptrParams = DllStructCreate( "int" )
+	DllCall( $dllGLESv2, "none", "glGetShaderiv", "uint", $shader, "uint", $pname, "ptr", DllStructGetPtr($ptrParams) )
+	$error = checkError("glGetShaderiv")
+	$params = DllStructGetData($ptrParams, 1);
+	return $error
+EndFunc
+
+Func glDeleteShader( $shader )
+	DllCall( $dllGLESv2, "none", "glDeleteShader", "uint", $shader )
+	return checkError("glDeleteShader")
+EndFunc
+
+Func glGetShaderInfoLog($shader, $maxLength, byref $length, byref $infoLog)
+	Local $ptrParams = DllStructCreate( "int;char[" & $maxLength & "]" )
+	DllCall( $dllGLESv2, "none", "glGetShaderInfoLog", "uint", $shader, "uint", $maxLength, "ptr", DllStructGetPtr($ptrParams, 1), "ptr", DllStructGetPtr($ptrParams, 2) )
+	$error = checkError("glGetShaderInfoLog")
+	$length = DllStructGetData($ptrParams, 1);
+	$infoLog = DllStructGetData($ptrParams, 2);
+	return $error
+EndFunc
+
+Func glBindAttribLocation($glBindAttribLocation, $index, $name)
+	DllCall( $dllGLESv2, "none", "glBindAttribLocation", "uint", $glBindAttribLocation, "uint", $index, "char*", $name )
+	$error = checkError("glBindAttribLocation")
+	return $error
+EndFunc
+
+Func glGetProgramiv($program, $pname, byref $params)
+	Local $ptrParams = DllStructCreate( "int" )
+	DllCall( $dllGLESv2, "none", "glGetProgramiv", "uint", $program, "uint", $pname, "ptr", DllStructGetPtr($ptrParams) )
+	$error = checkError("glGetProgramiv")
+	$params = DllStructGetData($ptrParams, 1);
+	return $error
+EndFunc
+
+Func glGetProgramInfoLog($program, $maxLength, byref $length, byref $infoLog)
+	Local $ptrParams = DllStructCreate( "int;char[" & $maxLength & "]" )
+	DllCall( $dllGLESv2, "none", "glGetProgramInfoLog", "uint", $program, "uint", $maxLength, "ptr", DllStructGetPtr($ptrParams, 1), "ptr", DllStructGetPtr($ptrParams, 2) )
+	$error = checkError("glGetProgramInfoLog")
+	$length = DllStructGetData($ptrParams, 1);
+	$infoLog = DllStructGetData($ptrParams, 2);
+	return $error
+EndFunc
+
+Func glDeleteProgram( $program )
+	DllCall( $dllGLESv2, "none", "glDeleteProgram", "uint", $program )
+	return checkError("glDeleteProgram")
+EndFunc
+
+Func glVertexAttribPointer($index, $size, $type, $normalized, $stride, $pointer)
+	Local $ptrParams = DllStructCreate( "float[" & ($size * 3) & "]" )
+	For $i = 0 To UBound($pointer) - 1 Step 1
+	  DllStructSetData($ptrParams, 1, $pointer[$i], $i + 1)
+	Next
+	DllCall( $dllGLESv2, "none", "glVertexAttribPointer", "uint", $index, "int", $size, "int", $type, "boolean", $normalized, "uint", $stride, "ptr", DllStructGetPtr($ptrParams))
+	$error = checkError("glVertexAttribPointer")
+	return $error
+EndFunc
+
+Func glEnableVertexAttribArray( $index )
+	DllCall( $dllGLESv2, "none", "glEnableVertexAttribArray", "uint", $index )
+	return checkError("glEnableVertexAttribArray")
+EndFunc
+
+Func glDrawArrays( $mode, $first, $count )
+	DllCall( $dllGLESv2, "none", "glDrawArrays", "uint", $mode, "int", $first, "uint", $count )
+	return checkError("glDrawArrays")
+EndFunc
