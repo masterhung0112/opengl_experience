@@ -188,3 +188,36 @@ Func glDrawArrays( $mode, $first, $count )
 	DllCall( $dllGLESv2, "none", "glDrawArrays", "uint", $mode, "int", $first, "uint", $count )
 	return checkError("glDrawArrays")
 EndFunc
+
+Func glGenBuffers(GLsizei $n, $buffers)
+	Local $ptrParams = DllStructCreate( "uint[" & $n & "]" )
+	DllCall( $dllGLESv2, "none", "glGenBuffers", "uint", $n, "ptr", DllStructGetPtr($ptrParams, 1))
+	$error = checkError("glGenBuffers")
+	$buffers = DllStructGetData($ptrParams, 1);
+	return $error
+EndFunc
+
+Func glBindBuffer(GLenum $target, GLuint $buffer)
+	DllCall( $dllGLESv2, "none", "glBindBuffer", "uint", $target, "uint", $buffer )
+	return checkError("glBindBuffer")
+EndFunc
+
+Func glBufferData($target, $size, $data, $usage)
+	Local $ptrParams = DllStructCreate( "float[" & ($size) & "]" )
+	For $i = 0 To UBound($data) - 1 Step 1
+	  DllStructSetData($ptrParams, 1, $data[$i], $i + 1)
+	Next
+	DllCall( $dllGLESv2, "none", "glBufferData", "uint", $target, "int", $size, "ptr", DllStructGetPtr($ptrParams), "uint", $usage)
+	$error = checkError("glBufferData")
+	return $error
+EndFunc
+
+Func glBufferSubData($target, $offset, $size, $data)
+	Local $ptrParams = DllStructCreate( "float[" & ($size) & "]" )
+	For $i = 0 To UBound($data) - 1 Step 1
+	  DllStructSetData($ptrParams, 1, $data[$i], $i + 1)
+	Next
+	DllCall( $dllGLESv2, "none", "glBufferSubData", "uint", $target, "int", $offset, "int", $size, "ptr", DllStructGetPtr($ptrParams))
+	$error = checkError("glBufferSubData")
+	return $error
+EndFunc

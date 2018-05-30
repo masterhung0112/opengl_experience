@@ -31,7 +31,6 @@ Func DisplayFunction()
    glEnableVertexAttribArray(0)
    glDrawArrays( $GL_TRIANGLES, 0, 3 )
    eglSwapBuffers($eglDisplay, $eglSurface)
-   ;SwapBuffers( $hDC )
 
    glUseProgram(0)
 EndFunc
